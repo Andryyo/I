@@ -1,7 +1,6 @@
 package com.Andryyo.I;
 
 import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Created by Андрей on 02.01.2015.
@@ -18,8 +17,8 @@ public class SimulationObjectPosition {
     }
 
     public SimulationObjectPosition(SimulationObjectPosition p1)   {
-        this.position = p1.position;
-        this.speed = p1.speed;
-        this.forces = p1.forces;
+        this.position = new SimulationVector(p1.position);
+        this.speed = new SimulationVector(p1.speed);
+        this.forces = new HashMap<SimulationObject, SimulationVector>(p1.forces);
     }
 }

@@ -1,6 +1,5 @@
 package com.Andryyo.I;
 
-import com.Andryyo.I.SimulationVector;
 /**
  * Created by Андрей on 02.01.2015.
  */
@@ -12,7 +11,7 @@ public class SimulationObject {
     public SimulationObject(double mass, SimulationObjectPosition position)   {
         this.ownAcceleration = new SimulationVector(0, 0);
         this.mass = mass;
-        this.position = position;
+        this.position = new SimulationObjectPosition(position);
     }
 
     public SimulationObjectPosition getPosition()   {
@@ -20,7 +19,7 @@ public class SimulationObject {
     }
 
     public void setPosition(SimulationObjectPosition p) {
-        position = p;
+        position = new SimulationObjectPosition(p);
     }
 
     public SimulationVector getOwnAcceleration()    {

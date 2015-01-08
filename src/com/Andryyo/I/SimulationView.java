@@ -37,7 +37,7 @@ public class SimulationView extends View implements OnUpdateListener {
         int centerY = canvas.getHeight()/2;
         paint.setColor(Color.WHITE);
         SimulationObject [] objects = s.getObjects();
-        maxCoordinate = 0;
+        //maxCoordinate = 0;
         for (SimulationObject object : objects) {
             if (maxCoordinate < Math.abs(object.getPosition().position.x*2))   {
                 maxCoordinate = Math.abs(object.getPosition().position.x)*2;
@@ -57,11 +57,10 @@ public class SimulationView extends View implements OnUpdateListener {
                 //float x = centerX;
                 //float y = centerY;
                 canvas.drawPoint(x, y, paint);
-                canvas.drawPoint(241, 400, paint);
             }
         }
         paint.setColor(Color.WHITE);
-        canvas.drawText("Scale: " + scaleFactor, 50, 50, paint);
+
         for (SimulationObject object : objects) {
             if (!trajectories.containsKey(object))
                 trajectories.put(object, new Vector<SimulationObjectPosition>());
@@ -78,7 +77,7 @@ public class SimulationView extends View implements OnUpdateListener {
                     (float)(object.getPosition().position.x*scaleFactor + centerX),
                     (float)(object.getPosition().position.y*scaleFactor + centerY),
                     (float)(object.getPosition().position.x*scaleFactor + centerX + object.getPosition().speed.x*scaleFactor),
-                    (float)(object.getPosition().position.x*scaleFactor + centerY + object.getPosition().speed.y*scaleFactor),
+                    (float)(object.getPosition().position.y*scaleFactor + centerY + object.getPosition().speed.y*scaleFactor),
                     paint);
             paint.setColor(Color.GREEN);
             for (SimulationObject key : object.getPosition().forces.keySet())    {
@@ -91,6 +90,9 @@ public class SimulationView extends View implements OnUpdateListener {
                         paint);
             }
         }
+        canvas.drawText("Scale: " + scaleFactor, 50, 50, paint);
+        canvas.drawText("Sigma: " + String.valueOf(s.getSigma()), 50, 60, paint);
+        canvas.drawText("Step: " + String.valueOf(s.getSimulationStep()), 50, 70, paint);
     }
 
     @Override
