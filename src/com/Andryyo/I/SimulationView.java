@@ -13,6 +13,7 @@ import java.util.Vector;
  * Created by Андрей on 02.01.2015.
  */
 public class SimulationView extends View implements OnUpdateListener {
+    private static int TRAJECTORY_LENGTH = 1000;
     private Simulation s;
     private Paint paint = new Paint();
     private HashMap<SimulationObject, Vector<SimulationObjectPosition>> trajectories = new HashMap<SimulationObject, Vector<SimulationObjectPosition>>();
@@ -65,7 +66,8 @@ public class SimulationView extends View implements OnUpdateListener {
             if (!trajectories.containsKey(object))
                 trajectories.put(object, new Vector<SimulationObjectPosition>());
             trajectories.get(object).add(new SimulationObjectPosition(object.getPosition()));
-
+            //if (trajectories.get(object).size() > TRAJECTORY_LENGTH)
+            //     trajectories.get(object).remove(0);
             paint.setColor(Color.WHITE);
             canvas.drawCircle(
                     (float)(object.getPosition().position.x*scaleFactor + centerX),

@@ -3,11 +3,19 @@ package com.Andryyo.I;
 import android.os.SystemClock;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * Created by Андрей on 02.01.2015.
  */
 public class Simulation implements Runnable {
+
+    static  {
+        System.loadLibrary("I");
+        nativeInit();
+    }
+
     public static double SIMULATION_STEP = 0.0000001;
     public static double MAX_SIGMA = 0.001;
     public static double MIN_SIGMA = MAX_SIGMA/10;
@@ -27,7 +35,7 @@ public class Simulation implements Runnable {
         SimulationObject[] objects = new SimulationObject[currentStep.positions.keySet().size()];
         int i = 0;
         for (SimulationObject o : currentStep.positions.keySet())   {
-            objects[i] = new SimulationObject(o.getMass(), o.getPosition());
+            objects[i] = new SimulationObject(o.getPosition());
             i++;
         }
         return objects;
@@ -74,31 +82,10 @@ public class Simulation implements Runnable {
         }
     }
 
-    public static SimulationVector calcGravitationAcceleration(double mass, SimulationObjectPosition p1, SimulationObjectPosition p2)   {
-        double r = SimulationVector.value(SimulationVector.substract(p1.position, p2.position));
-        if (r == 0)
-            return new SimulationVector(0, 0);
-        return SimulationVector.multiply(SimulationVector.substract(p2.position, p1.position), GRAVITATIONAL_CONSTANT * mass / (r*r*r));
-    }
+    private static native void nativeInit();
+    private native double[][] calculateObjectsAccelerationRungeKutta(double[][] positions);
 
-    public static SimulationVector f1(SimulationObject currentObject, HashMap<SimulationObject, SimulationObjectPosition> args) {
-        SimulationVector acceleration = new SimulationVector(currentObject.getOwnAcceleration());
-        for (SimulationObject otherObject : args.keySet())  {
-            if (currentObject.equals(otherObject))
-                continue;
-            acceleration = SimulationVector.add(
-                    acceleration,
-                    calcGravitationAcceleration(
-                            otherObject.getMass(),
-                            args.get(currentObject),
-                            args.get(otherObject)));
-        }
-        return acceleration;
-    }
-
-    public static SimulationVector f2(SimulationObject currentObject, HashMap<SimulationObject, SimulationObjectPosition> args)    {
-        return args.get(currentObject).speed;
-    }
+    //public native String calculateObjectsAccelerationRungeKutta(HashMap<SimulationObject, SimulationObjectPosition> input);
 
     @Override
     public void run() {
@@ -110,139 +97,16 @@ public class Simulation implements Runnable {
 
     class SimulationStep    {
         private SimulationStep prevStep, nextStep;
-        public HashMap<SimulationObject, SimulationObjectPosition> positions = new HashMap<SimulationObject, SimulationObjectPosition>();
+        public LinkedHashMap<SimulationObject, SimulationObjectPosition> positions = new LinkedHashMap<SimulationObject, SimulationObjectPosition>();
         public double sigma = 0;
 
         public SimulationStep getNextStep() {
             return nextStep;
         }
 
-        public HashMap<SimulationObject, SimulationObjectPosition> calculateObjectsAccelerationRungeKutta() {
-            HashMap<SimulationObject, SimulationVector> M1 = new HashMap<SimulationObject, SimulationVector>(); //вторая производная
-            HashMap<SimulationObject, SimulationVector> K1 = new HashMap<SimulationObject, SimulationVector>(); //первая производная
-            HashMap<SimulationObject, SimulationVector> M2 = new HashMap<SimulationObject, SimulationVector>();
-            HashMap<SimulationObject, SimulationVector> K2 = new HashMap<SimulationObject, SimulationVector>();
-            HashMap<SimulationObject, SimulationVector> M3 = new HashMap<SimulationObject, SimulationVector>();
-            HashMap<SimulationObject, SimulationVector> K3 = new HashMap<SimulationObject, SimulationVector>();
-            HashMap<SimulationObject, SimulationVector> M4 = new HashMap<SimulationObject, SimulationVector>();
-            HashMap<SimulationObject, SimulationVector> K4 = new HashMap<SimulationObject, SimulationVector>();
-
-            for (SimulationObject object : positions.keySet())   {
-                M1.put(object, SimulationVector.multiply(f1(object, positions),SIMULATION_STEP));
-                K1.put(object, SimulationVector.multiply(f2(object, positions),SIMULATION_STEP));
-            }
-
-            HashMap<SimulationObject, SimulationObjectPosition> buf = new HashMap<SimulationObject, SimulationObjectPosition>();
-            for (SimulationObject object : positions.keySet())   {
-                buf.put(
-                        object,
-                        new SimulationObjectPosition(
-                                SimulationVector.add(positions.get(object).position, SimulationVector.multiply(K1.get(object), 0.5)),
-                                SimulationVector.add(positions.get(object).speed, SimulationVector.multiply(M1.get(object), 0.5)
-                                )
-                        )
-                );
-            }
-
-            for (SimulationObject object : positions.keySet())   {
-                M2.put(object, SimulationVector.multiply(f1(object, buf),SIMULATION_STEP));
-                K2.put(object, SimulationVector.multiply(f2(object, buf),SIMULATION_STEP));
-            }
-
-            buf = new HashMap<SimulationObject, SimulationObjectPosition>();
-            for (SimulationObject object : positions.keySet())   {
-                buf.put(
-                        object,
-                        new SimulationObjectPosition(
-                                SimulationVector.add(positions.get(object).position, SimulationVector.multiply(K2.get(object), 0.5)),
-                                SimulationVector.add(positions.get(object).speed, SimulationVector.multiply(M2.get(object), 0.5)
-                                )
-                        )
-                );
-            }
-
-            for (SimulationObject object : positions.keySet())   {
-                M3.put(object, SimulationVector.multiply(f1(object, buf),SIMULATION_STEP));
-                K3.put(object, SimulationVector.multiply(f2(object, buf),SIMULATION_STEP));
-            }
-
-            buf = new HashMap<SimulationObject, SimulationObjectPosition>();
-            for (SimulationObject object : positions.keySet())   {
-                buf.put(
-                        object,
-                        new SimulationObjectPosition(
-                                SimulationVector.add(positions.get(object).position, K3.get(object)),
-                                SimulationVector.add(positions.get(object).speed, M3.get(object)
-                                )
-                        )
-                );
-            }
-
-            for (SimulationObject object : positions.keySet())   {
-                M4.put(object, SimulationVector.multiply(f1(object, buf),SIMULATION_STEP));
-                K4.put(object, SimulationVector.multiply(f2(object, buf),SIMULATION_STEP));
-            }
-
-            HashMap<SimulationObject, SimulationObjectPosition> result = new HashMap<SimulationObject, SimulationObjectPosition>();
-            for (SimulationObject object : positions.keySet())   {
-                SimulationVector position = SimulationVector.add(
-                        positions.get(object).position,
-                        SimulationVector.multiply(
-                                SimulationVector.add(
-                                        K1.get(object),
-                                        SimulationVector.add(
-                                                SimulationVector.multiply(K2.get(object),2),
-                                                SimulationVector.add(
-                                                        SimulationVector.multiply(K3.get(object), 2),
-                                                        K4.get(object))
-                                        )
-                                ),
-                                1.0/6));
-                SimulationVector speed = SimulationVector.add(
-                        positions.get(object).speed,
-                        SimulationVector.multiply(
-                                SimulationVector.add(
-                                        M1.get(object),
-                                        SimulationVector.add(
-                                                SimulationVector.multiply(M2.get(object),2),
-                                                SimulationVector.add(
-                                                        SimulationVector.multiply(M3.get(object), 2),
-                                                        M4.get(object))
-                                        )
-                                ),
-                                1.0/6));
-                result.put(object, new SimulationObjectPosition(position, speed));
-            }
-
-            sigma = 0;
-             for (SimulationObject object : result.keySet()) {
-                double part1 =
-                        SimulationVector.value(
-                                SimulationVector.substract(M2.get(object), M3.get(object)))
-                        ;
-                double part2 =
-                        SimulationVector.value(
-                                SimulationVector.substract(M1.get(object), M2.get(object))
-                        );
-
-                if (part2 != 0 && part1 != 0 && (Math.abs((1 - part1/part2)) > sigma))
-                    sigma = Math.abs(part1/part2);
-            }
-
-            if (sigma > MAX_SIGMA)    {
-                SIMULATION_STEP /= 10;
-                //result = calculateObjectsAccelerationRungeKutta();
-            }
-            if (sigma < MIN_SIGMA)    {
-                SIMULATION_STEP *= 2;
-            }
-
-            return result;
-        }
-
         public void updateObjectsPositions() {
-            for (SimulationObject o : positions.keySet())
-                o.setPosition(positions.get(o));
+            for (Map.Entry<SimulationObject, SimulationObjectPosition> entry : positions.entrySet())
+                entry.getKey().setPosition(entry.getValue());
         }
 
         public void setObjectPosition(SimulationObject o, SimulationObjectPosition p)
@@ -261,7 +125,19 @@ public class Simulation implements Runnable {
 
         public SimulationStep generateNextSimulationStep()    {
             nextStep = new SimulationStep();
-            nextStep.positions = calculateObjectsAccelerationRungeKutta();
+            double [][] positionsArray = new double[positions.size()][];
+            int index = 0;
+            for (Map.Entry<SimulationObject, SimulationObjectPosition> entry : positions.entrySet()) {
+                positionsArray[index] = entry.getValue().toArray();
+                index++;
+            }
+            positionsArray = calculateObjectsAccelerationRungeKutta(positionsArray);
+            nextStep.positions = new LinkedHashMap<SimulationObject, SimulationObjectPosition>();
+            index = 0;
+            for (Map.Entry<SimulationObject, SimulationObjectPosition> entry : positions.entrySet())   {
+                nextStep.positions.put(entry.getKey(), new SimulationObjectPosition(positionsArray[index]));
+                index++;
+            }
             nextStep.sigma = currentStep.sigma;
             return nextStep;
         }

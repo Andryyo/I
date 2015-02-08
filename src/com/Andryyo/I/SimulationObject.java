@@ -6,11 +6,9 @@ package com.Andryyo.I;
 public class SimulationObject {
     private SimulationObjectPosition position;
     private SimulationVector ownAcceleration;
-    private double mass;
 
-    public SimulationObject(double mass, SimulationObjectPosition position)   {
+    public SimulationObject(SimulationObjectPosition position)   {
         this.ownAcceleration = new SimulationVector(0, 0);
-        this.mass = mass;
         this.position = new SimulationObjectPosition(position);
     }
 
@@ -24,9 +22,5 @@ public class SimulationObject {
 
     public SimulationVector getOwnAcceleration()    {
         return ownAcceleration;
-    }
-
-    public double getMass()  {
-        return mass;
     }
 }

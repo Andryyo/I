@@ -26,15 +26,16 @@ public class MyActivity extends Activity {
                 )
         );*/
 
-        s.addSimulationObject(
+        /*s.addSimulationObject(
                 new SimulationObject(
-                        100000000,
                         new SimulationObjectPosition(
                                 new SimulationVector(0, 0),
-                                new SimulationVector(0,0)
+                                new SimulationVector(0, 0),
+                                new SimulationVector(0, 0),
+                                100000000
                         )
                 )
-        );
+        );*/
 
         /*s.addSimulationObject(
                 new SimulationObject(
@@ -46,42 +47,46 @@ public class MyActivity extends Activity {
                 )
         );*/
 
-        s.addSimulationObject(
+        /*s.addSimulationObject(
                 new SimulationObject(
-                        1000000,
                         new SimulationObjectPosition(
                                 new SimulationVector(100, 100),
-                                new SimulationVector(0,-3000)
+                                new SimulationVector(0,-3000),
+                                new SimulationVector(0, 0),
+                                1000000
                         )
                 )
         );
 
         s.addSimulationObject(
                 new SimulationObject(
-                        1000000,
                         new SimulationObjectPosition(
                                 new SimulationVector(-100, -100),
-                                new SimulationVector(0,3000)
+                                new SimulationVector(0,3000),
+                                new SimulationVector(0, 0),
+                                1000000
                         )
                 )
-        );
+        );*/
 
         s.addSimulationObject(
                 new SimulationObject(
-                        1000000,
                         new SimulationObjectPosition(
                                 new SimulationVector(100, -100),
-                                new SimulationVector(-3000,0)
+                                new SimulationVector(-1500,0),
+                                new SimulationVector(0, 0),
+                                1000000000
                         )
                 )
         );
 
         s.addSimulationObject(
                 new SimulationObject(
-                        1000000,
                         new SimulationObjectPosition(
                                 new SimulationVector(-100, 100),
-                                new SimulationVector(3000,0)
+                                new SimulationVector(1500,0),
+                                new SimulationVector(0, 0),
+                                1000000000
                         )
                 )
         );
